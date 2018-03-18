@@ -1,21 +1,16 @@
 package com.dskimina;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SudokuElement {
 
     private String value;
-    private List<String> possibilities = new ArrayList<>();
+    private List<String> possibilities;
     private Set<SudokuElement> neighbours = new HashSet<>();
 
-    public SudokuElement() {
-        this.value = Sudoku.UNKNOWN;
-        for(int i=1;i<=9;i++){
-            this.possibilities.add(Integer.toString(i));
-        }
+    public SudokuElement(String value, List<String> alphabet) {
+        this.value = value;
+        this.possibilities = new ArrayList<>(alphabet);
     }
 
     public Set<SudokuElement> getNeighbours() {

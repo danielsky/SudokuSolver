@@ -1,39 +1,79 @@
 package com.dskimina;
 
 import com.sun.istack.internal.Nullable;
+import org.apache.commons.io.IOUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class Sudoku {
 
-    public static final String UNKNOWN = "x";
+    private static final int BLOCK_SIZE = 3;
+    private static final int GRID_SIZE = BLOCK_SIZE * BLOCK_SIZE;
+
+    private static final List<String> ALPHABET;
+    private static final String UNKNOWN = "x";
+    private static final List<String> ALLOWED_VALES;
+
+    static{
+        ALPHABET = new ArrayList<>(Arrays.asList("1", "2", "3", "4", "5", "6", "7", "8", "9"));
+
+        List<String> l = new ArrayList<>(ALPHABET);
+        l.add(UNKNOWN);
+        ALLOWED_VALES = Collections.unmodifiableList(l);
+    }
+
+
     private SudokuElement[][] array;
 
-    public Sudoku() {
-        array = new SudokuElement[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                array[i][j] = new SudokuElement();
+    Sudoku(){
+        //for test only
+    }
+
+    public Sudoku(InputStream is) throws IOException{
+        array = new SudokuElement[GRID_SIZE][GRID_SIZE];
+
+        List<String> lines;
+        try (InputStream reader = is){
+            lines = IOUtils.readLines(reader, "UTF8");
+        } catch (IOException e) {
+            throw new IOException("Cannot read input file");
+        }
+
+        if(lines.size() != GRID_SIZE) throw new IllegalStateException("Length must be equal to 9. Current: "+lines.size());
+
+        for (int i = 0; i < GRID_SIZE; i++) {
+            String[] chars = lines.get(i).split(" ");
+            if(chars.length != GRID_SIZE){
+                throw new IllegalStateException("Length must be equal to 9. Current: "+lines.size());
+            }
+            for (int j = 0; j < GRID_SIZE; j++) {
+                String val = chars[j];
+                if(!ALLOWED_VALES.contains(val)){
+                    throw new IllegalStateException("Illegal element in grid: " + val);
+                }
+                array[i][j] = new SudokuElement(val, ALPHABET);
             }
         }
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 addNeighbours(array[i][j], i ,j);
             }
         }
     }
 
     private Sudoku(Sudoku s, int x, int y, String value) {
-        array = new SudokuElement[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                SudokuElement elem = new SudokuElement();
-                elem.setValue(s.getElement(i,j).getValue());
+        array = new SudokuElement[GRID_SIZE][GRID_SIZE];
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
+                String val = s.getElement(i,j).getValue();
+                SudokuElement elem = new SudokuElement(val, ALPHABET);
                 array[i][j] = elem;
             }
         }
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 addNeighbours(array[i][j], i ,j);
             }
         }
@@ -42,21 +82,21 @@ public class Sudoku {
     }
 
     private void addNeighbours(SudokuElement element, int x, int y){
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
             if(i==y) continue;
             element.getNeighbours().add(array[x][i]);
         }
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
             if(i==x) continue;
             element.getNeighbours().add(array[i][y]);
         }
         int xzone = getZone(x);
         int yzone = getZone(y);
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                int k = xzone*3+i;
-                int l = yzone*3+j;
+        for (int i = 0; i < BLOCK_SIZE; i++) {
+            for (int j = 0; j < BLOCK_SIZE; j++) {
+                int k = xzone*BLOCK_SIZE+i;
+                int l = yzone*BLOCK_SIZE+j;
                 if(k == x && l == y) continue;
                 element.getNeighbours().add(array[k][l]);
             }
@@ -80,8 +120,8 @@ public class Sudoku {
                 Sudoku newSudoku = new Sudoku(this, holder.getX(), holder.getY(), possibility);
                 try {
                     if (newSudoku.solve()) {
-                        for (int i = 0; i < 9; i++) {
-                            for (int j = 0; j < 9; j++) {
+                        for (int i = 0; i < GRID_SIZE; i++) {
+                            for (int j = 0; j < GRID_SIZE; j++) {
                                 array[i][j].setValue(newSudoku.getElement(i, j).getValue());
                             }
                         }
@@ -95,8 +135,8 @@ public class Sudoku {
     }
 
     private boolean eliminate() throws UnsolvableException{
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 SudokuElement se = array[i][j];
                 String value = se.getValue();
                 if(!UNKNOWN.equals(value)){
@@ -107,8 +147,8 @@ public class Sudoku {
             }
         }
         boolean filled = false;
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 SudokuElement elem = array[i][j];
                 String value = elem.getValue();
                 if(UNKNOWN.equals(value)){
@@ -124,52 +164,50 @@ public class Sudoku {
         return filled;
     }
 
-    private int getZone(int value){
-        if(value<0 || value>8) throw new IllegalStateException("Incorrect value: "+value);
-        if(value ==0 || value == 1 || value == 2) return 0;
-        if(value ==3 || value == 4 || value == 5) return 1;
-        else return 2;
+    int getZone(int value){
+        if(value<0 || value>=GRID_SIZE) throw new IllegalStateException("Incorrect value: "+value);
+        for(int i = 0;i<BLOCK_SIZE;i++){
+            int min = i * BLOCK_SIZE;
+            int max = min + BLOCK_SIZE;
+            if(value>= min && value<max) return i;
+        }
+        throw new IllegalStateException("");
     }
 
     private boolean finalCheck(){
-        Set<String> temp = new HashSet<>(9);
+        Set<String> temp = new HashSet<>(GRID_SIZE);
 
-        Set<String> control = new HashSet<>(9);
-        for (int i = 0; i < 9; i++) {
-            control.add(Integer.toString(i+1));
-        }
-
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 temp.add(array[i][j].getValue());
             }
-            if(temp.size() != 9) return false;
-            temp.removeAll(control);
+            if(temp.size() != GRID_SIZE) return false;
+            temp.removeAll(ALPHABET);
             if(temp.size() > 0 ) return false;
         }
 
         temp.clear();
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 temp.add(array[j][i].getValue());
             }
-            if(temp.size() != 9) return false;
-            temp.removeAll(control);
+            if(temp.size() != GRID_SIZE) return false;
+            temp.removeAll(ALPHABET);
             if(temp.size() > 0 ) return false;
         }
 
         temp.clear();
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 3; k++) {
-                    for (int l = 0; l < 3; l++) {
-                        temp.add(array[i*3+k][j*3+l].getValue());
+        for (int i = 0; i < BLOCK_SIZE; i++) {
+            for (int j = 0; j < BLOCK_SIZE; j++) {
+                for (int k = 0; k < BLOCK_SIZE; k++) {
+                    for (int l = 0; l < BLOCK_SIZE; l++) {
+                        temp.add(array[i*BLOCK_SIZE+k][j*BLOCK_SIZE+l].getValue());
                     }
                 }
-                if(temp.size() != 9) return false;
-                temp.removeAll(control);
+                if(temp.size() != GRID_SIZE) return false;
+                temp.removeAll(ALPHABET);
                 if(temp.size() > 0 ) return false;
             }
         }
@@ -181,8 +219,8 @@ public class Sudoku {
     public void print(int iteration){
         System.out.println("Iteration: "+iteration);
         int counter = 0;
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 String value = array[i][j].getValue();
                 System.out.print(value+" ");
                 if(!UNKNOWN.equals(value)){
@@ -196,8 +234,8 @@ public class Sudoku {
 
     public void printPossibilities(int iteration){
         System.out.println("Possibilities: "+iteration);
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 SudokuElement se = array[i][j];
                 String value = se.getValue();
                 if(UNKNOWN.equals(value)){
@@ -214,8 +252,8 @@ public class Sudoku {
     @Nullable
     private MinimalSudokuElementHolder getMinimalSudokuHolder(){
         List<MinimalSudokuElementHolder> list = new ArrayList<>();
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
                 SudokuElement se = array[i][j];
                 if(UNKNOWN.equals(se.getValue())){
                     MinimalSudokuElementHolder holder = new MinimalSudokuElementHolder();

@@ -1,28 +1,16 @@
 package com.dskimina;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        Sudoku sudoku = new Sudoku();
+        Sudoku sudoku;
         try(InputStream is = getInputFile(args)){
-            List<String> lines = IOUtils.readLines(is, "UTF8");
-            for (int i = 0; i < 9; i++) {
-                String[] tab = lines.get(i).split(" ");
-                if(tab.length != 9) throw new IllegalStateException("Length must be equal to 9. Current: "+tab.length);
-                for (int j = 0; j < 9; j++) {
-                    if(!"x".equals(tab[j])) {
-                        sudoku.getElement(i, j).setValue(tab[j]);
-                    }
-                }
-            }
+            sudoku = new Sudoku(is);
         }catch(IOException ex){
             throw new IllegalStateException("cannot read input file", ex);
         }
@@ -50,7 +38,7 @@ public class Main {
         }
 
         System.out.println("Reading file from classpath");
-        return Main.class.getResourceAsStream("/init.dat");
-        //return Main.class.getResourceAsStream("/input_very_hard.dat");
+        //return Main.class.getResourceAsStream("/init.dat");
+        return Main.class.getResourceAsStream("/input_very_hard.dat");
     }
 }
