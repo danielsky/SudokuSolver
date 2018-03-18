@@ -1,0 +1,19 @@
+0 1 2 3 4 5 6 7 8 9 A B C D E F
+C D E F 0 1 2 3 4 5 6 7 8 9 A B
+8 9 A B C D E F 0 1 2 3 4 5 6 7
+4 5 6 7 8 9 A B C D E F 0 1 2 3
+
+1 2 3 4 5 6 7 8 9 A B C D E F 0
+D E F 0 1 2 3 4 5 6 7 8 9 A B C
+9 A B C D E F 0 1 2 3 4 5 6 7 8
+5 6 7 8 9 A B C D E F 0 1 2 3 4
+
+2 3 4 5 6 7 8 9 A B C D E F 0 1
+E F 0 1 2 3 4 5 6 7 8 9 A B C D
+A B C D E F 0 1 2 3 4 5 6 7 8 9
+6 7 8 9 A B C D E F 0 1 2 3 4 5
+
+3 4 5 6 7 8 9 A B C D E F 0 1 2
+F 0 1 2 3 4 5 6 7 8 9 A B C D E
+B C D E F 0 1 2 3 4 5 6 7 8 9 A
+7 8 9 A B C D E F 0 1 2 3 4 5 6
