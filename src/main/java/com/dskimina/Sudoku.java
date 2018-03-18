@@ -31,7 +31,7 @@ public class Sudoku {
         //for test only
     }
 
-    public Sudoku(InputStream is) throws IOException{
+    Sudoku(InputStream is) throws IOException{
         array = new SudokuElement[GRID_SIZE][GRID_SIZE];
 
         List<String> lines;
@@ -67,9 +67,9 @@ public class Sudoku {
         array = new SudokuElement[GRID_SIZE][GRID_SIZE];
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
-                String val = s.getElement(i,j).getValue();
+                String val = s.array[i][j].getValue();
                 SudokuElement elem = new SudokuElement(val, ALPHABET);
-                array[i][j] = elem;
+                this.array[i][j] = elem;
             }
         }
         for (int i = 0; i < GRID_SIZE; i++) {
@@ -103,10 +103,6 @@ public class Sudoku {
         }
     }
 
-    public SudokuElement getElement(int x, int y){
-        return array[x][y];
-    }
-
     public boolean solve() throws UnsolvableException{
         boolean t;
         do {
@@ -122,7 +118,7 @@ public class Sudoku {
                     if (newSudoku.solve()) {
                         for (int i = 0; i < GRID_SIZE; i++) {
                             for (int j = 0; j < GRID_SIZE; j++) {
-                                array[i][j].setValue(newSudoku.getElement(i, j).getValue());
+                                this.array[i][j].setValue(newSudoku.array[i][j].getValue());
                             }
                         }
                     }
@@ -175,40 +171,34 @@ public class Sudoku {
     }
 
     private boolean finalCheck(){
-        Set<String> temp = new HashSet<>(GRID_SIZE);
+        Set<String> tempVertical = new HashSet<>(GRID_SIZE);
+        Set<String> tempHorizontal = new HashSet<>(GRID_SIZE);
 
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
-                temp.add(array[i][j].getValue());
+                tempHorizontal.add(array[i][j].getValue());
+                tempVertical.add(array[i][j].getValue());
             }
-            if(temp.size() != GRID_SIZE) return false;
-            temp.removeAll(ALPHABET);
-            if(temp.size() > 0 ) return false;
+            if(tempHorizontal.size() != GRID_SIZE) return false;
+            if(tempVertical.size() != GRID_SIZE) return false;
+            tempHorizontal.removeAll(ALPHABET);
+            tempVertical.removeAll(ALPHABET);
+            if(tempHorizontal.size() > 0 ) return false;
+            if(tempVertical.size() > 0 ) return false;
         }
 
-        temp.clear();
-
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                temp.add(array[j][i].getValue());
-            }
-            if(temp.size() != GRID_SIZE) return false;
-            temp.removeAll(ALPHABET);
-            if(temp.size() > 0 ) return false;
-        }
-
-        temp.clear();
+        Set<String> tempBlock = new HashSet<>(GRID_SIZE);
 
         for (int i = 0; i < BLOCK_SIZE; i++) {
             for (int j = 0; j < BLOCK_SIZE; j++) {
                 for (int k = 0; k < BLOCK_SIZE; k++) {
                     for (int l = 0; l < BLOCK_SIZE; l++) {
-                        temp.add(array[i*BLOCK_SIZE+k][j*BLOCK_SIZE+l].getValue());
+                        tempBlock.add(array[i*BLOCK_SIZE+k][j*BLOCK_SIZE+l].getValue());
                     }
                 }
-                if(temp.size() != GRID_SIZE) return false;
-                temp.removeAll(ALPHABET);
-                if(temp.size() > 0 ) return false;
+                if(tempBlock.size() != GRID_SIZE) return false;
+                tempBlock.removeAll(ALPHABET);
+                if(tempBlock.size() > 0 ) return false;
             }
         }
 
@@ -230,23 +220,6 @@ public class Sudoku {
             System.out.println();
         }
         System.out.println("Znanych: "+ counter);
-    }
-
-    public void printPossibilities(int iteration){
-        System.out.println("Possibilities: "+iteration);
-        for (int i = 0; i < GRID_SIZE; i++) {
-            for (int j = 0; j < GRID_SIZE; j++) {
-                SudokuElement se = array[i][j];
-                String value = se.getValue();
-                if(UNKNOWN.equals(value)){
-                    System.out.print(se.getPossibilities().size());
-                }else{
-                    System.out.print(0);
-                }
-                System.out.print(" ");
-            }
-            System.out.println();
-        }
     }
 
     @Nullable
@@ -276,27 +249,27 @@ public class Sudoku {
         private int y;
         private SudokuElement sudokuElement;
 
-        public int getX() {
+        int getX() {
             return x;
         }
 
-        public void setX(int x) {
+        void setX(int x) {
             this.x = x;
         }
 
-        public int getY() {
+        int getY() {
             return y;
         }
 
-        public void setY(int y) {
+        void setY(int y) {
             this.y = y;
         }
 
-        public SudokuElement getSudokuElement() {
+        SudokuElement getSudokuElement() {
             return sudokuElement;
         }
 
-        public void setSudokuElement(SudokuElement sudokuElement) {
+        void setSudokuElement(SudokuElement sudokuElement) {
             this.sudokuElement = sudokuElement;
         }
 
